@@ -395,42 +395,29 @@ async def remote_action(action: str):
             try:
                 audio = getattr(atv, "audio", None)
                 if audio is not None:
-                    try:
-                        vol = audio.volume
-                    except Exception:
-                        vol = None
-
-                    if vol is not None:
-                        if vol == 0.0:
-                            try:
-                                await audio.set_volume(_last_volume)
-                            except Exception:
-                                pass
-                            _is_muted = False
-                        else:
-                            _last_volume = float(vol)
-                            try:
-                                await audio.set_volume(0.0)
-                            except Exception:
-                                pass
-                            _is_muted = True
+                    if _is_muted:
+                        try:
+                            await audio.set_volume(_last_volume)
+                        except Exception:
+                            for _ in range(10):
+                                await remote.volume_up()
+                                await asyncio.sleep(0.05)
+                        _is_muted = False
                     else:
-                        if _is_muted:
-                            try:
-                                await audio.set_volume(_last_volume)
-                            except Exception:
-                                for _ in range(10):
-                                    await remote.volume_up()
-                                    await asyncio.sleep(0.05)
-                            _is_muted = False
-                        else:
-                            try:
-                                await audio.set_volume(0.0)
-                            except Exception:
-                                for _ in range(15):
-                                    await remote.volume_down()
-                                    await asyncio.sleep(0.05)
-                            _is_muted = True
+                        try:
+                            vol = audio.volume
+                            if vol is not None and vol > 0.0:
+                                _last_volume = float(vol)
+                        except Exception:
+                            pass
+
+                        try:
+                            await audio.set_volume(0.0)
+                        except Exception:
+                            for _ in range(15):
+                                await remote.volume_down()
+                                await asyncio.sleep(0.05)
+                        _is_muted = True
                 else:
                     if _is_muted:
                         for _ in range(10):
@@ -443,7 +430,6 @@ async def remote_action(action: str):
                             await asyncio.sleep(0.05)
                         _is_muted = True
             except Exception as e:
-                # Return OK to prevent frontend from disconnecting on error
                 return {"ok": False, "action": "mute", "error": str(e)}
             return {"ok": True, "action": "mute"}
             
