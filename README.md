@@ -24,7 +24,29 @@ Under the hood, it uses the [pyatv](https://pyatv.dev/) library's Companion prot
 - A machine to run the server on the same LAN as your Apple TV (e.g., Raspberry Pi, home server, NAS).
 - Your Apple TV must be configured to allow local network control.
 
-## Installation
+## Installation (Docker)
+
+The easiest way to run the remote is using Docker. The container needs host network access (`--network host`) so it can discover Apple TVs on your local network.
+
+```bash
+# Build the image
+docker build -t atv-remote .
+
+# Run the container (persisting settings to your current directory)
+docker run -d \
+  --name atv-remote \
+  --network host \
+  --restart unless-stopped \
+  -v $(pwd)/settings.json:/app/settings.json \
+  -v $(pwd)/pyatv.conf:/app/pyatv.conf \
+  atv-remote
+```
+
+*Note: You may need to `touch settings.json pyatv.conf` before running the `docker run` command so Docker mounts them as files, not directories.*
+
+---
+
+## Installation (Manual / Systemd)
 
 1. **Clone the repository:**
    ```bash

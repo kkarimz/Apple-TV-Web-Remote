@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.venv/
+venv/
+settings.json
+pyatv.conf
+screenshot.png
+screenshot-v2.png
