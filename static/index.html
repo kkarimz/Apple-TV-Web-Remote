@@ -121,7 +121,7 @@
     }
 
     .dpad {
-      width: 220px; height: 220px; margin: 3rem auto 1.5rem;
+      width: 260px; height: 260px; margin: 3rem auto 1.5rem;
       position: relative;
       border-radius: 50%;
       background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
@@ -131,7 +131,7 @@
         0 0 0 1px rgba(255,255,255,0.05);
     }
     .dir {
-      position: absolute; width: 60px; height: 60px;
+      position: absolute; width: 70px; height: 70px;
       border: none; border-radius: 50%; cursor: pointer;
       background: transparent; color: transparent;
       display: flex; align-items: center; justify-content: center;
@@ -149,7 +149,7 @@
     .dir.right { right: 4px; top: 50%; transform: translateY(-50%); }
     .select {
       position: absolute; top: 50%; left: 50%;
-      width: 104px; height: 104px; margin: -52px 0 0 -52px;
+      width: 120px; height: 120px; margin: -60px 0 0 -60px;
       border: none; border-radius: 50%; cursor: pointer;
       background: linear-gradient(160deg, #3a4452, #232933);
       color: transparent;
@@ -162,14 +162,14 @@
     /* Siri Remote Bottom Buttons */
     .siri-buttons {
       display: grid;
-      grid-template-columns: 66px 66px;
-      grid-template-rows: 66px 66px 66px;
-      gap: 16px;
+      grid-template-columns: 76px 76px;
+      grid-template-rows: 76px 76px 76px;
+      gap: 20px;
       justify-content: center;
       margin-bottom: 1rem;
     }
     .siri-btn {
-      width: 66px; height: 66px; border-radius: 50%;
+      width: 76px; height: 76px; border-radius: 50%;
       background: var(--key); color: var(--text); border: 1px solid var(--line);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
@@ -181,8 +181,8 @@
     .siri-vol-pill {
       grid-column: 2;
       grid-row: 2 / span 2;
-      width: 66px; height: 148px;
-      border-radius: 33px;
+      width: 76px; height: 172px;
+      border-radius: 38px;
       background: var(--key); border: 1px solid var(--line);
       display: flex; flex-direction: column;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
