@@ -1,6 +1,6 @@
 # Apple TV Web Remote
 
-LAN web remote for office Apple TV, hosted on the Dell at **http://10.0.0.188:8888**.
+LAN web remote for Apple TV, accessible from any browser on your network.
 
 Uses [pyatv](https://pyatv.dev/) Companion protocol for D-pad, apps, power, and text input.
 
@@ -26,18 +26,17 @@ Uses [pyatv](https://pyatv.dev/) Companion protocol for D-pad, apps, power, and 
 | `pyatv.conf` | Pairing credentials (gitignored) |
 | `systemd/atv-web.service` | User systemd unit |
 
-## Deploy (Dell)
+## Deploy
 
 ```bash
-# code lives in /home/kais/atv-web with its own .venv
-XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus \
-  systemctl --user restart atv-web.service
+# Example systemd restart command (adjust paths in your .service file)
+systemctl --user restart atv-web.service
 ```
 
 ## Pairing
 
-1. Open http://10.0.0.188:8888  
-2. Scan → select **Office** (or the correct Apple TV)  
+1. Open the web interface (e.g. `http://<your-server-ip>:8888`)
+2. Scan → select your Apple TV
 3. Start pairing → enter PIN from the TV  
 4. Connect if needed  
 
