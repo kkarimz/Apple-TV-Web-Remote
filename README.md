@@ -1,43 +1,71 @@
 # Apple TV Web Remote
 
-LAN web remote for Apple TV, accessible from any browser on your network.
+A fast, responsive, mobile-friendly web remote for Apple TV, hosted on your LAN. 
+Designed to mimic the physical silver Siri Remote, this web app lets you control your Apple TV from any browser on your network.
 
-Uses [pyatv](https://pyatv.dev/) Companion protocol for D-pad, apps, power, and text input.
+Under the hood, it uses the [pyatv](https://pyatv.dev/) library's Companion protocol to communicate with your Apple TV over the network.
 
 ## Features
 
-- Scan & pick an Apple TV on the LAN
-- One-time PIN pairing (code shown on the TV)
-- Remote: directions, OK, Menu, Home, TV/top menu, volume, play/pause
-- YouTube one-tap launch
-- Text input for on-TV search keyboards
-- Sleep / Wake
-- Auto-reconnect on open when already paired
-- Installable PWA (Add to Home Screen)
-- Desktop keyboard: arrow keys, Enter, Esc, Space
+- **Siri Remote UI:** A beautiful, responsive interface that matches the physical silver Apple TV remote (D-pad, playback controls, volume rocker).
+- **Network Pairing:** Scan for Apple TVs on your LAN and pair using the standard PIN code method.
+- **Full Control:** Navigation, Select, Menu, Home, Play/Pause, Volume, and Mute.
+- **Keyboard Input:** Automatically type into on-screen search fields on your TV using your phone or desktop keyboard.
+- **Desktop Keyboard Support:** Use Arrow keys, Enter, Esc, and Space on your computer to navigate the TV.
+- **Hold-to-Sleep:** Long-press the power button to sleep the TV, tap to wake.
+- **PWA Support:** Installable as a Progressive Web App (Add to Home Screen) for a native app feel on iOS/Android.
 
-## Layout
+## Requirements
 
-| Path | Purpose |
-|------|---------|
-| `main.py` | FastAPI + pyatv |
-| `static/index.html` | Remote UI |
-| `settings.json` | Selected device (gitignored) |
-| `pyatv.conf` | Pairing credentials (gitignored) |
-| `systemd/atv-web.service` | User systemd unit |
+- Python 3.10+
+- A machine to run the server on the same LAN as your Apple TV (e.g., Raspberry Pi, home server, NAS).
+- Your Apple TV must be configured to allow local network control.
 
-## Deploy
+## Installation
 
-```bash
-# Example systemd restart command (adjust paths in your .service file)
-systemctl --user restart atv-web.service
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/atv-remote.git
+   cd atv-remote
+   ```
 
-## Pairing
+2. **Set up a virtual environment:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
-1. Open the web interface (e.g. `http://<your-server-ip>:8888`)
-2. Scan → select your Apple TV
-3. Start pairing → enter PIN from the TV  
-4. Connect if needed  
+3. **Install dependencies:**
+   ```bash
+   pip install fastapi uvicorn pyatv
+   ```
 
-Volume works when Apple TV controls the display/speakers via CEC/eARC.
+4. **Run the server:**
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port 8888
+   ```
+
+## Pairing your Apple TV
+
+1. Ensure the server is running, then open the web interface on your phone or computer (`http://<server-ip>:8888`).
+2. Open the **Connection** drawer at the bottom and click **Scan**.
+3. Select your Apple TV from the list.
+4. Your Apple TV will display a 4-digit PIN on the screen. Enter it in the web interface to pair.
+5. You're connected! The credentials are automatically saved in `pyatv.conf` and `settings.json` so you won't need to pair again.
+
+## Running as a Service (Systemd)
+
+To keep the server running in the background, a sample systemd service file is provided in `systemd/atv-web.service`.
+
+1. Copy the file:
+   ```bash
+   cp systemd/atv-web.service ~/.config/systemd/user/
+   ```
+2. Edit the file to match the absolute path where you cloned the repository.
+3. Enable and start the service:
+   ```bash
+   systemctl --user enable --now atv-web.service
+   ```
+
+## Notes
+- **Volume Control:** Volume buttons (`+`, `-`, `Mute`) require your Apple TV to be configured to control your TV or Receiver's volume via CEC/eARC.
