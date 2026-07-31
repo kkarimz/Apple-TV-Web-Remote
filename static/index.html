@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Apple TV Remote</title>
+  <meta name="theme-color" content="#0b0d10" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ATV Remote" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #14181e;
+      --panel2: #1c222b;
+      --line: rgba(255,255,255,0.08);
+      --text: #eef2f6;
+      --muted: #8b97a8;
+      --accent: #5ac8fa;
+      --accent2: #0a84ff;
+      --danger: #ff6b6b;
+      --ok: #32d74b;
+      --key: #252b34;
+      --key-hi: #323a46;
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg); touch-action: manipulation; }
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, #1a2740 0%, transparent 55%),
+        var(--bg);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 1.4rem 1rem 2.4rem;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+    }
+    .wrap { width: 100%; max-width: 380px; }
+
+    .status {
+      background: linear-gradient(160deg, var(--panel2), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 1.1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    .status-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 3px rgba(139,151,168,0.15);
+    }
+    .dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(50,215,75,0.18); }
+    .dot.warn { background: #ffd60a; box-shadow: 0 0 0 3px rgba(255,214,10,0.15); }
+    .device-name {
+      margin-top: 8px; font-size: 1.05rem; font-weight: 800;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .now-playing {
+      margin-top: 4px; font-size: 0.78rem; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      min-height: 1.1em;
+    }
+    .status-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-sm {
+      flex: 1; border: none; border-radius: 10px; cursor: pointer;
+      font-family: inherit; font-weight: 700; font-size: 0.78rem;
+      padding: 10px 12px;
+      background: var(--key); color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .btn-sm:active { transform: scale(0.97); background: var(--key-hi); }
+    .btn-sm.primary {
+      background: linear-gradient(135deg, var(--accent2), #0066cc);
+      border-color: transparent; color: #fff;
+    }
+
+    .remote {
+      background: linear-gradient(180deg, #1a1f27, #12151a);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 1.35rem 1.2rem 1.5rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .brand {
+      text-align: center; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted);
+      margin-bottom: 1.1rem; opacity: 0.85;
+    }
+
+    .dpad {
+      width: 220px; height: 220px; margin: 0 auto 1.2rem;
+      position: relative;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,0.55),
+        0 8px 20px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .dir {
+      position: absolute; width: 64px; height: 64px;
+      border: none; border-radius: 16px; cursor: pointer;
+      background: transparent; color: var(--text);
+      font-size: 1.35rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dir:active, .dir.pressed {
+      background: rgba(90,200,250,0.12);
+      color: var(--accent);
+    }
+    .dir.up { top: 10px; left: 50%; transform: translateX(-50%); }
+    .dir.down { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .dir.left { left: 10px; top: 50%; transform: translateY(-50%); }
+    .dir.right { right: 10px; top: 50%; transform: translateY(-50%); }
+    .select {
+      position: absolute; top: 50%; left: 50%;
+      width: 78px; height: 78px; margin: -39px 0 0 -39px;
+      border: none; border-radius: 50%; cursor: pointer;
+      background: linear-gradient(160deg, #3a4452, #232933);
+      color: var(--text); font-weight: 800; font-size: 0.72rem;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+      font-family: inherit;
+    }
+    .select:active, .select.pressed {
+      background: linear-gradient(160deg, var(--accent2), #0055aa);
+      color: #fff;
+    }
+
+    .row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .key {
+      height: 52px; border: none; border-radius: 14px; cursor: pointer;
+      background: var(--key); color: var(--text);
+      font-family: inherit; font-weight: 700; font-size: 0.82rem;
+      border: 1px solid var(--line);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    }
+    .key:active, .key.pressed {
+      background: var(--key-hi);
+      color: var(--accent);
+      transform: scale(0.97);
+    }
+    .vol-row {
+      display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 10px;
+      margin-top: 4px;
+    }
+    .vol {
+      height: 56px; border: none; border-radius: 14px; cursor: pointer;
+      background: var(--key); color: var(--text);
+      font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 1.25rem;
+      border: 1px solid var(--line);
+    }
+    .vol:active { background: var(--key-hi); color: var(--accent); transform: scale(0.97); }
+    .play {
+      height: 56px; border: none; border-radius: 14px; cursor: pointer;
+      background: linear-gradient(135deg, #2c3542, #1c222b);
+      color: var(--text); font-size: 1.2rem;
+      border: 1px solid var(--line); font-family: inherit;
+    }
+    .play:active { color: var(--accent); transform: scale(0.97); }
+
+    .pair-card {
+      margin-top: 1rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px 16px;
+    }
+    .pair-card h2 {
+      font-size: 0.72rem; letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .pair-card p { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+    .device-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 200px; overflow-y: auto; }
+    .device {
+      text-align: left; border: 1px solid var(--line); border-radius: 12px;
+      background: var(--panel2); color: var(--text); padding: 12px 14px;
+      cursor: pointer; font-family: inherit;
+    }
+    .device:hover, .device.selected { border-color: rgba(90,200,250,0.45); }
+    .device .n { font-weight: 800; font-size: 0.92rem; }
+    .device .m { font-size: 0.72rem; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; }
+    .pin-row { display: flex; gap: 8px; }
+    .pin-row input {
+      flex: 1; border-radius: 12px; border: 1px solid var(--line);
+      background: #0e1116; color: var(--text); font-size: 1.2rem;
+      font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+      letter-spacing: 4px; text-align: center; padding: 12px;
+      outline: none;
+    }
+    .pin-row input:focus { border-color: var(--accent); }
+    .toast {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      background: #1c222b; color: var(--text); border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 16px; font-size: 0.8rem; font-weight: 600;
+      z-index: 50; opacity: 0; pointer-events: none; transition: opacity .2s;
+      max-width: 90vw;
+    }
+    .toast.show { opacity: 1; }
+    .hint { text-align: center; margin-top: 0.9rem; font-size: 0.7rem; color: var(--muted); opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="status">
+      <div class="status-row">
+        <div class="pill"><span class="dot" id="dot"></span><span id="conn-label">Checking…</span></div>
+        <div class="pill" id="addr-label">—</div>
+      </div>
+      <div class="device-name" id="device-name">Apple TV Remote</div>
+      <div class="now-playing" id="now-playing"> </div>
+      <div class="status-actions">
+        <button class="btn-sm" onclick="scanDevices()">Scan</button>
+        <button class="btn-sm primary" onclick="connectDevice()">Connect</button>
+      </div>
+    </div>
+
+    <div class="remote">
+      <div class="brand">Office · Apple TV</div>
+
+      <div class="dpad">
+        <button class="dir up" data-action="up" aria-label="Up">▲</button>
+        <button class="dir left" data-action="left" aria-label="Left">◀</button>
+        <button class="select" data-action="select">OK</button>
+        <button class="dir right" data-action="right" aria-label="Right">▶</button>
+        <button class="dir down" data-action="down" aria-label="Down">▼</button>
+      </div>
+
+      <div class="row">
+        <button class="key" data-action="menu">Menu</button>
+        <button class="key" data-action="home">Home</button>
+        <button class="key" data-action="top_menu">TV</button>
+      </div>
+
+      <div class="vol-row">
+        <button class="vol" data-action="volume_down" aria-label="Volume down">−</button>
+        <button class="play" data-action="play_pause" aria-label="Play Pause">⏯</button>
+        <button class="vol" data-action="volume_up" aria-label="Volume up">+</button>
+      </div>
+    </div>
+
+    <div class="pair-card" id="pair-card">
+      <h2>Pair / Devices</h2>
+      <p id="pair-help">Scan the LAN, pick your office Apple TV, then enter the PIN shown on the TV.</p>
+      <div class="device-list" id="device-list"></div>
+      <div class="status-actions" style="margin-top:0;margin-bottom:10px">
+        <button class="btn-sm" onclick="scanDevices()">Refresh scan</button>
+        <button class="btn-sm primary" id="pair-start-btn" onclick="startPair()" disabled>Start pairing</button>
+      </div>
+      <div class="pin-row" id="pin-row" style="display:none">
+        <input id="pin-input" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="one-time-code" />
+        <button class="btn-sm primary" style="flex:0 0 auto;padding-inline:18px" onclick="finishPair()">Pair</button>
+      </div>
+    </div>
+
+    <div class="hint">http://10.0.0.188:8083 · same Wi‑Fi as the TV</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  let selectedId = null;
+  let busy = false;
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  async function api(path, opts = {}) {
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+      ...opts,
+    });
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok) {
+      const detail = (data && (data.detail || data.message)) || res.statusText;
+      throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+    }
+    return data;
+  }
+
+  function setConn(connected, paired) {
+    const dot = document.getElementById('dot');
+    const label = document.getElementById('conn-label');
+    dot.className = 'dot' + (connected ? ' on' : paired ? ' warn' : '');
+    label.textContent = connected ? 'Connected' : paired ? 'Paired · offline' : 'Not paired';
+  }
+
+  async function refreshStatus() {
+    try {
+      const d = await api('/api/status');
+      setConn(d.connected, d.paired);
+      document.getElementById('device-name').textContent = d.device_name || 'Apple TV Remote';
+      document.getElementById('addr-label').textContent = d.address || '—';
+      const p = d.playing;
+      if (p && (p.title || p.app)) {
+        const bits = [p.app, p.title, p.artist].filter(Boolean);
+        document.getElementById('now-playing').textContent = bits.join(' · ');
+      } else {
+        document.getElementById('now-playing').textContent = d.connected ? 'Idle' : ' ';
+      }
+      if (d.identifier) selectedId = d.identifier;
+    } catch (e) {
+      setConn(false, false);
+      document.getElementById('now-playing').textContent = 'Status unavailable';
+    }
+  }
+
+  async function scanDevices() {
+    const list = document.getElementById('device-list');
+    list.innerHTML = '<div class="m" style="color:var(--muted);padding:8px">Scanning…</div>';
+    try {
+      const d = await api('/api/scan');
+      if (!d.devices.length) {
+        list.innerHTML = '<div class="m" style="color:var(--muted);padding:8px">No devices found</div>';
+        return;
+      }
+      list.innerHTML = d.devices.map(dev => `
+        <button class="device${dev.identifier === selectedId ? ' selected' : ''}" data-id="${dev.identifier}" onclick="selectDevice('${dev.identifier}', this)">
+          <div class="n">${esc(dev.name || 'Apple TV')}${dev.has_companion ? '' : ' · limited'}</div>
+          <div class="m">${esc(dev.address || '')} · ${esc((dev.protocols || []).join(', '))}</div>
+        </button>
+      `).join('');
+      toast(`Found ${d.count} device${d.count === 1 ? '' : 's'}`);
+    } catch (e) {
+      list.innerHTML = '';
+      toast(e.message);
+    }
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function selectDevice(id, el) {
+    selectedId = id;
+    document.querySelectorAll('.device').forEach(b => b.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+    document.getElementById('pair-start-btn').disabled = !id;
+  }
+
+  async function startPair() {
+    if (!selectedId) return toast('Pick a device first');
+    try {
+      const d = await api('/api/pair/start', { method: 'POST', body: JSON.stringify({ identifier: selectedId }) });
+      document.getElementById('pin-row').style.display = 'flex';
+      document.getElementById('pair-help').textContent = `PIN should appear on ${d.name}. Enter it below.`;
+      document.getElementById('pin-input').focus();
+      toast('Enter PIN from TV');
+    } catch (e) {
+      toast(e.message);
+    }
+  }
+
+  async function finishPair() {
+    const pin = document.getElementById('pin-input').value.trim();
+    if (!pin) return toast('Enter the PIN');
+    try {
+      const d = await api('/api/pair/finish', { method: 'POST', body: JSON.stringify({ pin }) });
+      toast(d.message || 'Paired');
+      document.getElementById('pin-row').style.display = 'none';
+      document.getElementById('pin-input').value = '';
+      await refreshStatus();
+    } catch (e) {
+      toast(e.message);
+    }
+  }
+
+  async function connectDevice() {
+    try {
+      const d = await api('/api/connect', { method: 'POST', body: '{}' });
+      toast(d.name ? `Connected · ${d.name}` : 'Connected');
+      await refreshStatus();
+    } catch (e) {
+      toast(e.message);
+    }
+  }
+
+  async function send(action, btn) {
+    if (busy) return;
+    busy = true;
+    if (btn) btn.classList.add('pressed');
+    try {
+      await api('/api/remote/' + action, { method: 'POST', body: '{}' });
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      if (btn) btn.classList.remove('pressed');
+      busy = false;
+    }
+  }
+
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    const fire = (e) => { e.preventDefault(); send(btn.dataset.action, btn); };
+    btn.addEventListener('click', fire);
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); send(btn.dataset.action, btn); }, { passive: false });
+  });
+
+  document.getElementById('pin-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') finishPair();
+  });
+
+  window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    const map = {
+      ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+      Enter: 'select', Escape: 'menu', Backspace: 'menu',
+      ' ': 'play_pause',
+    };
+    if (map[e.key]) { e.preventDefault(); send(map[e.key]); }
+  });
+
+  refreshStatus();
+  setInterval(refreshStatus, 5000);
+  // Auto-scan on first load so Office devices are visible
+  scanDevices();
+</script>
+</body>
+</html>
