@@ -29,8 +29,7 @@ _atv: AppleTV | None = None
 _config: BaseConfig | None = None
 _pairing: Any = None
 _lock = asyncio.Lock()
-_last_volume = 20.0
-_is_muted = False
+
 
 
 def load_app_settings() -> dict:
@@ -391,33 +390,17 @@ async def remote_action(action: str):
         remote = atv.remote_control
         
         if action == "mute":
-            global _is_muted
             try:
                 audio = getattr(atv, "audio", None)
                 if audio is not None:
-                    if _is_muted:
-                        try:
-                            await audio.set_volume(20.0)
-                        except Exception:
-                            for _ in range(4):
-                                await remote.volume_up()
-                        _is_muted = False
-                    else:
-                        try:
-                            await audio.set_volume(0.0)
-                        except Exception:
-                            for _ in range(20):
-                                await remote.volume_down()
-                        _is_muted = True
-                else:
-                    if _is_muted:
-                        for _ in range(4):
-                            await remote.volume_up()
-                        _is_muted = False
-                    else:
+                    try:
+                        await audio.set_volume(0.0)
+                    except Exception:
                         for _ in range(20):
                             await remote.volume_down()
-                        _is_muted = True
+                else:
+                    for _ in range(20):
+                        await remote.volume_down()
             except Exception as e:
                 return {"ok": False, "action": "mute", "error": str(e)}
             return {"ok": True, "action": "mute"}
