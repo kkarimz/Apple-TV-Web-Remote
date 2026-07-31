@@ -27,7 +27,7 @@ Under the hood, it uses the [pyatv](https://pyatv.dev/) library's Companion prot
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/atv-remote.git
+   git clone https://github.com/kkarimz/atv-remote.git
    cd atv-remote
    ```
 
