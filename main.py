@@ -391,26 +391,19 @@ async def remote_action(action: str):
         remote = atv.remote_control
         
         if action == "mute":
-            global _last_volume, _is_muted
+            global _is_muted
             try:
                 audio = getattr(atv, "audio", None)
                 if audio is not None:
                     if _is_muted:
                         try:
-                            await audio.set_volume(_last_volume)
+                            await audio.set_volume(20.0)
                         except Exception:
                             for _ in range(10):
                                 await remote.volume_up()
                                 await asyncio.sleep(0.05)
                         _is_muted = False
                     else:
-                        try:
-                            vol = audio.volume
-                            if vol is not None and vol > 0.0:
-                                _last_volume = float(vol)
-                        except Exception:
-                            pass
-
                         try:
                             await audio.set_volume(0.0)
                         except Exception:
