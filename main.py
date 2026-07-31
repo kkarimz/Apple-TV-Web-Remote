@@ -401,6 +401,13 @@ async def remote_action(action: str):
                 raise HTTPException(status_code=500, detail=f"Mute failed: {e}")
             return {"ok": True, "action": "mute"}
             
+        if action == "select":
+            try:
+                # Waking explicitly helps dismiss the screensaver if it's active
+                await atv.power.turn_on()
+            except Exception:
+                pass
+
         method = getattr(remote, method_name, None)
         if method is None:
             raise HTTPException(status_code=400, detail=f"Action not supported: {action}")
