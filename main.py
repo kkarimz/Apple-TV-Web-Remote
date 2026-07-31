@@ -382,11 +382,25 @@ REMOTE_ACTIONS = {
 @app.post("/api/remote/{action}")
 async def remote_action(action: str):
     method_name = REMOTE_ACTIONS.get(action)
-    if not method_name:
+    if not method_name and action != "mute":
         raise HTTPException(status_code=400, detail=f"Unknown action: {action}")
 
     async def run(atv: AppleTV):
         remote = atv.remote_control
+        
+        if action == "mute":
+            try:
+                if hasattr(atv, "audio") and hasattr(atv.audio, "set_volume"):
+                    await atv.audio.set_volume(0.0)
+                else:
+                    # Fallback if audio interface is not exposed
+                    for _ in range(20):
+                        await remote.volume_down()
+                        await asyncio.sleep(0.05)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Mute failed: {e}")
+            return {"ok": True, "action": "mute"}
+            
         method = getattr(remote, method_name, None)
         if method is None:
             raise HTTPException(status_code=400, detail=f"Action not supported: {action}")

@@ -46,12 +46,12 @@
     .wrap { width: 100%; max-width: 360px; }
 
     .remote {
-      background: linear-gradient(180deg, #e4e5e7, #d2d4d8);
-      border: 1px solid #bcc0c5;
+      background: linear-gradient(180deg, #1a1f27, #12151a);
+      border: 1px solid var(--line);
       border-radius: 40px;
       padding: 1.5rem 1.25rem 2rem;
       margin-bottom: 0.75rem;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.8);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
       position: relative;
     }
     .remote-top {
@@ -80,18 +80,26 @@
     /* Power button — top-right corner */
     .power-btn {
       width: 38px; height: 38px; border-radius: 50%;
-      border: 1px solid #b5b8bc;
-      background: linear-gradient(180deg, #f0f1f3, #e1e3e6);
-      color: #333;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: #1e242d;
+      color: #8b97a8;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
       position: absolute; top: 1rem; right: 1rem;
     }
     .power-btn:active { transform: scale(0.92); }
-    .power-btn.on { color: #333; }
-    .power-btn.off { color: #999; }
+    .power-btn.on {
+      border-color: #32d74b;
+      color: #32d74b;
+      box-shadow: 0 0 10px rgba(50,215,75,0.4), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .power-btn.off {
+      border-color: #ff453a;
+      color: #ff453a;
+      box-shadow: 0 0 10px rgba(255,69,58,0.35), 0 2px 8px rgba(0,0,0,0.4);
+    }
     
     /* Hold-to-sleep fill ring */
     .power-btn .hold-ring {
@@ -116,10 +124,11 @@
       width: 220px; height: 220px; margin: 3rem auto 1.5rem;
       position: relative;
       border-radius: 50%;
-      background: #1c1c1e;
+      background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
       box-shadow:
-        inset 0 1px 4px rgba(255,255,255,0.1),
-        0 8px 16px rgba(0,0,0,0.15);
+        inset 0 2px 8px rgba(0,0,0,0.55),
+        0 8px 20px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(255,255,255,0.05);
     }
     .dir {
       position: absolute; width: 60px; height: 60px;
@@ -129,10 +138,10 @@
     }
     .dir::after {
       content: ''; display: block; width: 4px; height: 4px;
-      background: #fff; border-radius: 50%; opacity: 0.8;
+      background: #8b97a8; border-radius: 50%; opacity: 0.6;
     }
     .dir:active, .dir.pressed {
-      background: rgba(255,255,255,0.05);
+      background: rgba(90,200,250,0.12);
     }
     .dir.up { top: 4px; left: 50%; transform: translateX(-50%); }
     .dir.down { bottom: 4px; left: 50%; transform: translateX(-50%); }
@@ -142,12 +151,12 @@
       position: absolute; top: 50%; left: 50%;
       width: 104px; height: 104px; margin: -52px 0 0 -52px;
       border: none; border-radius: 50%; cursor: pointer;
-      background: #141414;
+      background: linear-gradient(160deg, #3a4452, #232933);
       color: transparent;
-      box-shadow: inset 0 4px 8px rgba(0,0,0,0.6), 0 0 0 1px #000, 0 1px 1px rgba(255,255,255,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
     }
     .select:active, .select.pressed {
-      background: #0a0a0c;
+      background: linear-gradient(160deg, var(--accent2), #0055aa);
     }
 
     /* Siri Remote Bottom Buttons */
@@ -161,30 +170,30 @@
     }
     .siri-btn {
       width: 66px; height: 66px; border-radius: 50%;
-      background: #1c1c1e; color: #fff; border: none;
+      background: var(--key); color: var(--text); border: 1px solid var(--line);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.8);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       transition: transform 0.1s;
     }
-    .siri-btn:active, .siri-btn.pressed { transform: scale(0.95); background: #121214; }
+    .siri-btn:active, .siri-btn.pressed { transform: scale(0.95); background: var(--key-hi); color: var(--accent); }
     
     .siri-vol-pill {
       grid-column: 2;
       grid-row: 2 / span 2;
       width: 66px; height: 148px;
       border-radius: 33px;
-      background: #1c1c1e;
+      background: var(--key); border: 1px solid var(--line);
       display: flex; flex-direction: column;
-      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.8);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       overflow: hidden;
     }
     .siri-vol-pill .vol {
-      width: 100%; height: 50%; border: none; background: transparent; color: #fff;
+      width: 100%; height: 50%; border: none; background: transparent; color: var(--text);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; font-weight: 300; cursor: pointer; transition: background 0.1s;
     }
-    .siri-vol-pill .vol:active, .siri-vol-pill .vol.pressed { background: #121214; }
+    .siri-vol-pill .vol:active, .siri-vol-pill .vol.pressed { background: var(--key-hi); color: var(--accent); }
     
     /* Hide old styles used by drawers */
     .row { display: flex; gap: 8px; margin-bottom: 8px; }
