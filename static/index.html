@@ -46,19 +46,20 @@
     .wrap { width: 100%; max-width: 360px; }
 
     .remote {
-      background: linear-gradient(180deg, #1a1f27, #12151a);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      padding: 1.1rem 1.15rem 1.25rem;
+      background: linear-gradient(180deg, #e4e5e7, #d2d4d8);
+      border: 1px solid #bcc0c5;
+      border-radius: 40px;
+      padding: 1.5rem 1.25rem 2rem;
       margin-bottom: 0.75rem;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.8);
+      position: relative;
     }
     .remote-top {
       display: flex; align-items: center; justify-content: space-between;
       gap: 10px; margin-bottom: 1.1rem;
     }
     .title {
-      font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em;
+      display: none; /* Hide title to look like the real remote */
     }
     .now-playing {
       margin-top: 2px; font-size: 0.72rem; color: var(--muted);
@@ -67,41 +68,34 @@
     }
     .now-playing:empty { display: none; }
     .dot {
-      width: 9px; height: 9px; border-radius: 50%;
-      background: var(--muted);
-      box-shadow: 0 0 0 3px rgba(139,151,168,0.12);
+      width: 10px; height: 3px; border-radius: 2px;
+      background: #111;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.4);
       flex-shrink: 0;
+      position: absolute; top: 1.8rem; left: 50%; transform: translateX(-50%);
     }
-    .dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(50,215,75,0.16); }
-    .dot.warn { background: #ffd60a; box-shadow: 0 0 0 3px rgba(255,214,10,0.14); }
+    .dot.on { background: #32d74b; box-shadow: 0 0 6px #32d74b; }
+    .dot.warn { background: #ffd60a; box-shadow: 0 0 6px #ffd60a; }
 
     /* Power button — top-right corner */
     .power-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.1);
-      background: #1e242d;
-      color: #8b97a8;
-      font-size: 1rem;
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 1px solid #b5b8bc;
+      background: linear-gradient(180deg, #f0f1f3, #e1e3e6);
+      color: #333;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
-      transition: all 0.25s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.9);
+      position: absolute; top: 1rem; right: 1rem;
     }
     .power-btn:active { transform: scale(0.92); }
-    .power-btn.on {
-      border-color: #32d74b;
-      color: #32d74b;
-      box-shadow: 0 0 10px rgba(50,215,75,0.4), 0 2px 8px rgba(0,0,0,0.4);
-    }
-    .power-btn.off {
-      border-color: #ff453a;
-      color: #ff453a;
-      box-shadow: 0 0 10px rgba(255,69,58,0.35), 0 2px 8px rgba(0,0,0,0.4);
-    }
+    .power-btn.on { color: #333; }
+    .power-btn.off { color: #999; }
+    
     /* Hold-to-sleep fill ring */
     .power-btn .hold-ring {
-      position: absolute; inset: -3px;
+      position: absolute; inset: -4px;
       border-radius: 50%; pointer-events: none;
     }
     .power-btn .hold-ring circle {
@@ -119,75 +113,85 @@
     }
 
     .dpad {
-      width: 210px; height: 210px; margin: 0 auto 1.1rem;
+      width: 220px; height: 220px; margin: 3rem auto 1.5rem;
       position: relative;
       border-radius: 50%;
-      background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
+      background: #1c1c1e;
       box-shadow:
-        inset 0 2px 8px rgba(0,0,0,0.55),
-        0 8px 20px rgba(0,0,0,0.35),
-        0 0 0 1px rgba(255,255,255,0.05);
+        inset 0 1px 4px rgba(255,255,255,0.1),
+        0 8px 16px rgba(0,0,0,0.15);
     }
     .dir {
       position: absolute; width: 60px; height: 60px;
-      border: none; border-radius: 16px; cursor: pointer;
-      background: transparent; color: var(--text);
-      font-size: 1.25rem; font-weight: 700;
+      border: none; border-radius: 50%; cursor: pointer;
+      background: transparent; color: transparent;
       display: flex; align-items: center; justify-content: center;
     }
-    .dir:active, .dir.pressed {
-      background: rgba(90,200,250,0.12);
-      color: var(--accent);
+    .dir::after {
+      content: ''; display: block; width: 4px; height: 4px;
+      background: #fff; border-radius: 50%; opacity: 0.8;
     }
-    .dir.up { top: 8px; left: 50%; transform: translateX(-50%); }
-    .dir.down { bottom: 8px; left: 50%; transform: translateX(-50%); }
-    .dir.left { left: 8px; top: 50%; transform: translateY(-50%); }
-    .dir.right { right: 8px; top: 50%; transform: translateY(-50%); }
+    .dir:active, .dir.pressed {
+      background: rgba(255,255,255,0.05);
+    }
+    .dir.up { top: 4px; left: 50%; transform: translateX(-50%); }
+    .dir.down { bottom: 4px; left: 50%; transform: translateX(-50%); }
+    .dir.left { left: 4px; top: 50%; transform: translateY(-50%); }
+    .dir.right { right: 4px; top: 50%; transform: translateY(-50%); }
     .select {
       position: absolute; top: 50%; left: 50%;
-      width: 74px; height: 74px; margin: -37px 0 0 -37px;
+      width: 104px; height: 104px; margin: -52px 0 0 -52px;
       border: none; border-radius: 50%; cursor: pointer;
-      background: linear-gradient(160deg, #3a4452, #232933);
-      color: var(--text); font-weight: 800; font-size: 0.7rem;
-      letter-spacing: 0.5px; text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-      font-family: inherit;
+      background: #141414;
+      color: transparent;
+      box-shadow: inset 0 4px 8px rgba(0,0,0,0.6), 0 0 0 1px #000, 0 1px 1px rgba(255,255,255,0.1);
     }
     .select:active, .select.pressed {
-      background: linear-gradient(160deg, var(--accent2), #0055aa);
-      color: #fff;
+      background: #0a0a0c;
     }
 
-    .row {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-      margin-bottom: 8px;
+    /* Siri Remote Bottom Buttons */
+    .siri-buttons {
+      display: grid;
+      grid-template-columns: 66px 66px;
+      grid-template-rows: 66px 66px 66px;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 1rem;
     }
-    .key, .vol, .play, .yt {
-      height: 48px; border: none; border-radius: 12px; cursor: pointer;
-      background: var(--key); color: var(--text);
-      font-family: inherit; font-weight: 700; font-size: 0.8rem;
-      border: 1px solid var(--line);
+    .siri-btn {
+      width: 66px; height: 66px; border-radius: 50%;
+      background: #1c1c1e; color: #fff; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.8);
+      transition: transform 0.1s;
     }
-    .key:active, .key.pressed, .vol:active, .play:active, .yt:active {
-      background: var(--key-hi);
-      color: var(--accent);
-      transform: scale(0.97);
+    .siri-btn:active, .siri-btn.pressed { transform: scale(0.95); background: #121214; }
+    
+    .siri-vol-pill {
+      grid-column: 2;
+      grid-row: 2 / span 2;
+      width: 66px; height: 148px;
+      border-radius: 33px;
+      background: #1c1c1e;
+      display: flex; flex-direction: column;
+      box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.8);
+      overflow: hidden;
     }
-    .yt {
-      width: 100%;
-      margin-bottom: 8px;
-      background: transparent;
-      color: #ff6b63;
-      border-color: rgba(255,107,99,0.28);
+    .siri-vol-pill .vol {
+      width: 100%; height: 50%; border: none; background: transparent; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 300; cursor: pointer; transition: background 0.1s;
     }
-    .yt:active { color: #ff8a84; background: rgba(255,107,99,0.08); }
-    .vol-row {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
-    }
-    .vol {
-      font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 1.2rem;
-    }
-    .play { font-size: 1.1rem; }
+    .siri-vol-pill .vol:active, .siri-vol-pill .vol.pressed { background: #121214; }
+    
+    /* Hide old styles used by drawers */
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .key, .yt { height: 48px; border-radius: 12px; cursor: pointer; background: var(--key); color: var(--text); border: 1px solid var(--line); flex:1;}
+    .key:active, .yt:active { background: var(--key-hi); }
+    .yt { color: #ff6b63; border-color: rgba(255,107,99,0.28); }
+    .drawer .row { margin-bottom: 0; }
 
     /* Inline kb (auto-opens when TV keyboard is focused) — hidden, kept for JS compat */
     .kb { display: none; }
@@ -304,33 +308,39 @@
           <div class="title">Apple TV Remote</div>
           <div class="now-playing" id="now-playing"></div>
         </div>
-        <div class="power-btn-wrap">
-          <span class="dot" id="dot" title="Connection"></span>
-          <button class="power-btn" id="btn-power" type="button" title="Tap to wake · Hold to sleep" aria-label="Power">
-            <svg class="hold-ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="21"/></svg>
-            ⏻
-          </button>
-        </div>
       </div>
+      
+      <span class="dot" id="dot" title="Connection"></span>
+      <button class="power-btn" id="btn-power" type="button" title="Tap to wake · Hold to sleep" aria-label="Power">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+        <svg class="hold-ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="21"/></svg>
+      </button>
 
       <div class="dpad">
-        <button class="dir up" data-action="up" aria-label="Up">▲</button>
-        <button class="dir left" data-action="left" aria-label="Left">◀</button>
-        <button class="select" data-action="select">OK</button>
-        <button class="dir right" data-action="right" aria-label="Right">▶</button>
-        <button class="dir down" data-action="down" aria-label="Down">▼</button>
+        <button class="dir up" data-action="up" aria-label="Up"></button>
+        <button class="dir left" data-action="left" aria-label="Left"></button>
+        <button class="select" data-action="select"></button>
+        <button class="dir right" data-action="right" aria-label="Right"></button>
+        <button class="dir down" data-action="down" aria-label="Down"></button>
       </div>
 
-      <div class="row">
-        <button class="key" data-action="menu">Menu</button>
-        <button class="key" data-action="home">Home</button>
-        <button class="key" data-action="top_menu">TV</button>
-      </div>
-
-      <div class="vol-row">
-        <button class="vol" data-action="volume_down" aria-label="Volume down">−</button>
-        <button class="play" data-action="play_pause" aria-label="Play Pause">⏯</button>
-        <button class="vol" data-action="volume_up" aria-label="Volume up">+</button>
+      <div class="siri-buttons">
+        <button class="siri-btn" data-action="menu" aria-label="Back">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="siri-btn" data-action="home" aria-label="TV">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="8" y1="18" x2="16" y2="18"></line></svg>
+        </button>
+        <button class="siri-btn" data-action="play_pause" aria-label="Play Pause">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M7 6v12l8-6-8-6z M16 6h2v12h-2z"/></svg>
+        </button>
+        <div class="siri-vol-pill">
+          <button class="vol" data-action="volume_up" aria-label="Volume up">+</button>
+          <button class="vol" data-action="volume_down" aria-label="Volume down">−</button>
+        </div>
+        <button class="siri-btn" data-action="mute" aria-label="Mute">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        </button>
       </div>
 
       <!-- hidden kb kept for JS compat with auto-focus detection -->

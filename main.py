@@ -375,6 +375,7 @@ REMOTE_ACTIONS = {
     "volume_up": "volume_up",
     "volume_down": "volume_down",
     "top_menu": "top_menu",
+    "mute": "mute",
 }
 
 
