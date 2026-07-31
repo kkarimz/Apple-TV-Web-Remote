@@ -1,10 +1,12 @@
 # Apple TV Web Remote — Dell notes
 
-**URL:** http://10.0.0.188:8083  
+**URL:** http://10.0.0.188:8888  
 **Service:** `atv-web.service`  
 **Path on Dell:** `/home/kais/atv-web`
 
 See also the master index: `/home/kais/SERVER.md` §6.
+
+Controls: D-pad, Menu/Home/TV, volume, play/pause, YouTube, text input, Sleep/Wake. Auto-reconnects when paired; installable as a phone home-screen app.
 
 ## Pairing
 

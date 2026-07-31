@@ -6,7 +6,12 @@
   <title>Apple TV Remote</title>
   <meta name="theme-color" content="#0b0d10" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="ATV Remote" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Apple TV Remote" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <style>
@@ -19,11 +24,9 @@
       --muted: #8b97a8;
       --accent: #5ac8fa;
       --accent2: #0a84ff;
-      --danger: #ff6b6b;
       --ok: #32d74b;
       --key: #252b34;
       --key-hi: #323a46;
-      --radius: 22px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { background: var(--bg); touch-action: manipulation; }
@@ -32,49 +35,222 @@
       color: var(--text);
       font-family: 'DM Sans', system-ui, sans-serif;
       background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, #1a2740 0%, transparent 55%),
+        radial-gradient(ellipse 70% 40% at 50% 0%, #152033 0%, transparent 55%),
         var(--bg);
       display: flex; flex-direction: column; align-items: center;
-      padding: 1.4rem 1rem 2.4rem;
+      padding: 1.5rem 1rem 2rem;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
       user-select: none;
     }
-    .wrap { width: 100%; max-width: 380px; }
+    .wrap { width: 100%; max-width: 360px; }
 
-    .status {
-      background: linear-gradient(160deg, var(--panel2), var(--panel));
+    .remote {
+      background: linear-gradient(180deg, #1a1f27, #12151a);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px 16px;
-      margin-bottom: 1.1rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      border-radius: 28px;
+      padding: 1.1rem 1.15rem 1.25rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
     }
-    .status-row {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    .remote-top {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 1.1rem;
     }
-    .pill {
-      display: inline-flex; align-items: center; gap: 7px;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.6px;
-      text-transform: uppercase; color: var(--muted);
-    }
-    .dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--muted);
-      box-shadow: 0 0 0 3px rgba(139,151,168,0.15);
-    }
-    .dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(50,215,75,0.18); }
-    .dot.warn { background: #ffd60a; box-shadow: 0 0 0 3px rgba(255,214,10,0.15); }
-    .device-name {
-      margin-top: 8px; font-size: 1.05rem; font-weight: 800;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .title {
+      font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em;
     }
     .now-playing {
-      margin-top: 4px; font-size: 0.78rem; color: var(--muted);
+      margin-top: 2px; font-size: 0.72rem; color: var(--muted);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      min-height: 1.1em;
+      max-width: 200px; min-height: 0;
     }
-    .status-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .now-playing:empty { display: none; }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 3px rgba(139,151,168,0.12);
+      flex-shrink: 0;
+    }
+    .dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(50,215,75,0.16); }
+    .dot.warn { background: #ffd60a; box-shadow: 0 0 0 3px rgba(255,214,10,0.14); }
+
+    /* Power button — top-right corner */
+    .power-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: #1e242d;
+      color: #8b97a8;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .power-btn:active { transform: scale(0.92); }
+    .power-btn.on {
+      border-color: #32d74b;
+      color: #32d74b;
+      box-shadow: 0 0 10px rgba(50,215,75,0.4), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .power-btn.off {
+      border-color: #ff453a;
+      color: #ff453a;
+      box-shadow: 0 0 10px rgba(255,69,58,0.35), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    /* Hold-to-sleep fill ring */
+    .power-btn .hold-ring {
+      position: absolute; inset: -3px;
+      border-radius: 50%; pointer-events: none;
+    }
+    .power-btn .hold-ring circle {
+      fill: none; stroke: #ff453a; stroke-width: 3;
+      stroke-dasharray: 132; stroke-dashoffset: 132;
+      stroke-linecap: round;
+      transform: rotate(-90deg); transform-origin: center;
+    }
+    .power-btn.holding .hold-ring circle {
+      transition: stroke-dashoffset 0.6s linear;
+      stroke-dashoffset: 0;
+    }
+    .power-btn-wrap {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+
+    .dpad {
+      width: 210px; height: 210px; margin: 0 auto 1.1rem;
+      position: relative;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,0.55),
+        0 8px 20px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .dir {
+      position: absolute; width: 60px; height: 60px;
+      border: none; border-radius: 16px; cursor: pointer;
+      background: transparent; color: var(--text);
+      font-size: 1.25rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dir:active, .dir.pressed {
+      background: rgba(90,200,250,0.12);
+      color: var(--accent);
+    }
+    .dir.up { top: 8px; left: 50%; transform: translateX(-50%); }
+    .dir.down { bottom: 8px; left: 50%; transform: translateX(-50%); }
+    .dir.left { left: 8px; top: 50%; transform: translateY(-50%); }
+    .dir.right { right: 8px; top: 50%; transform: translateY(-50%); }
+    .select {
+      position: absolute; top: 50%; left: 50%;
+      width: 74px; height: 74px; margin: -37px 0 0 -37px;
+      border: none; border-radius: 50%; cursor: pointer;
+      background: linear-gradient(160deg, #3a4452, #232933);
+      color: var(--text); font-weight: 800; font-size: 0.7rem;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+      font-family: inherit;
+    }
+    .select:active, .select.pressed {
+      background: linear-gradient(160deg, var(--accent2), #0055aa);
+      color: #fff;
+    }
+
+    .row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .key, .vol, .play, .yt {
+      height: 48px; border: none; border-radius: 12px; cursor: pointer;
+      background: var(--key); color: var(--text);
+      font-family: inherit; font-weight: 700; font-size: 0.8rem;
+      border: 1px solid var(--line);
+    }
+    .key:active, .key.pressed, .vol:active, .play:active, .yt:active {
+      background: var(--key-hi);
+      color: var(--accent);
+      transform: scale(0.97);
+    }
+    .yt {
+      width: 100%;
+      margin-bottom: 8px;
+      background: transparent;
+      color: #ff6b63;
+      border-color: rgba(255,107,99,0.28);
+    }
+    .yt:active { color: #ff8a84; background: rgba(255,107,99,0.08); }
+    .vol-row {
+      display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 8px;
+    }
+    .vol {
+      font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 1.2rem;
+    }
+    .play { font-size: 1.1rem; }
+
+    /* Inline kb (auto-opens when TV keyboard is focused) — hidden, kept for JS compat */
+    .kb { display: none; }
+    .kb.open { display: none; } /* we use the drawer instead */
+    .kb-row { display: flex; gap: 8px; }
+    .kb-row input {
+      flex: 1; min-width: 0; border-radius: 12px; border: 1px solid var(--line);
+      background: #0e1116; color: var(--text); font-size: 1rem;
+      font-family: inherit; font-weight: 600;
+      padding: 11px 12px; outline: none;
+      user-select: text; -webkit-user-select: text;
+    }
+    .kb-row input:focus { border-color: var(--accent); }
+    .kb-row .btn-sm { flex: 0 0 auto; padding-inline: 16px; }
+
+    .drawer {
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 4px 12px 4px;
+      margin-bottom: 0.55rem;
+    }
+    .drawer-toggle {
+      width: 100%; display: flex; align-items: center; gap: 8px;
+      background: none; border: none; color: var(--muted);
+      font-family: inherit; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 1.1px; text-transform: uppercase;
+      cursor: pointer; text-align: left; padding: 10px 0;
+    }
+    .drawer-toggle .chevron { display: inline-block; transition: transform .18s; font-size: 0.7rem; }
+    .drawer-toggle.open .chevron { transform: rotate(90deg); }
+    .drawer-body { display: none; padding-bottom: 10px; }
+    .drawer-body.open { display: block; }
+    .drawer .row { margin-bottom: 0; }
+
+    .conn-card {
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 4px 12px 4px;
+    }
+    .conn-toggle {
+      width: 100%; display: flex; align-items: center; gap: 8px;
+      background: none; border: none; color: var(--muted);
+      font-family: inherit; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 1.1px; text-transform: uppercase;
+      cursor: pointer; text-align: left; padding: 10px 0;
+    }
+    .conn-toggle .chevron { display: inline-block; transition: transform .18s; font-size: 0.7rem; }
+    .conn-toggle.open .chevron { transform: rotate(90deg); }
+    .conn-toggle-sub {
+      text-transform: none; letter-spacing: 0; font-weight: 600;
+      color: var(--text); opacity: 0.75; margin-left: 2px;
+      max-width: 55%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #conn-body { display: none; padding-bottom: 10px; }
+    #conn-body.open { display: block; }
+
+    .conn-meta {
+      font-size: 0.72rem; color: var(--muted); margin-bottom: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .status-actions { display: flex; gap: 8px; margin-bottom: 10px; }
     .btn-sm {
       flex: 1; border: none; border-radius: 10px; cursor: pointer;
       font-family: inherit; font-weight: 700; font-size: 0.78rem;
@@ -87,125 +263,28 @@
       background: linear-gradient(135deg, var(--accent2), #0066cc);
       border-color: transparent; color: #fff;
     }
+    .btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .remote {
-      background: linear-gradient(180deg, #1a1f27, #12151a);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      padding: 1.35rem 1.2rem 1.5rem;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-    .brand {
-      text-align: center; font-size: 0.68rem; font-weight: 700;
-      letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted);
-      margin-bottom: 1.1rem; opacity: 0.85;
-    }
-
-    .dpad {
-      width: 220px; height: 220px; margin: 0 auto 1.2rem;
-      position: relative;
-      border-radius: 50%;
-      background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
-      box-shadow:
-        inset 0 2px 8px rgba(0,0,0,0.55),
-        0 8px 20px rgba(0,0,0,0.35),
-        0 0 0 1px rgba(255,255,255,0.05);
-    }
-    .dir {
-      position: absolute; width: 64px; height: 64px;
-      border: none; border-radius: 16px; cursor: pointer;
-      background: transparent; color: var(--text);
-      font-size: 1.35rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .dir:active, .dir.pressed {
-      background: rgba(90,200,250,0.12);
-      color: var(--accent);
-    }
-    .dir.up { top: 10px; left: 50%; transform: translateX(-50%); }
-    .dir.down { bottom: 10px; left: 50%; transform: translateX(-50%); }
-    .dir.left { left: 10px; top: 50%; transform: translateY(-50%); }
-    .dir.right { right: 10px; top: 50%; transform: translateY(-50%); }
-    .select {
-      position: absolute; top: 50%; left: 50%;
-      width: 78px; height: 78px; margin: -39px 0 0 -39px;
-      border: none; border-radius: 50%; cursor: pointer;
-      background: linear-gradient(160deg, #3a4452, #232933);
-      color: var(--text); font-weight: 800; font-size: 0.72rem;
-      letter-spacing: 0.5px; text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-      font-family: inherit;
-    }
-    .select:active, .select.pressed {
-      background: linear-gradient(160deg, var(--accent2), #0055aa);
-      color: #fff;
-    }
-
-    .row {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-      margin-bottom: 10px;
-    }
-    .key {
-      height: 52px; border: none; border-radius: 14px; cursor: pointer;
-      background: var(--key); color: var(--text);
-      font-family: inherit; font-weight: 700; font-size: 0.82rem;
-      border: 1px solid var(--line);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-    }
-    .key:active, .key.pressed {
-      background: var(--key-hi);
-      color: var(--accent);
-      transform: scale(0.97);
-    }
-    .vol-row {
-      display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 10px;
-      margin-top: 4px;
-    }
-    .vol {
-      height: 56px; border: none; border-radius: 14px; cursor: pointer;
-      background: var(--key); color: var(--text);
-      font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 1.25rem;
-      border: 1px solid var(--line);
-    }
-    .vol:active { background: var(--key-hi); color: var(--accent); transform: scale(0.97); }
-    .play {
-      height: 56px; border: none; border-radius: 14px; cursor: pointer;
-      background: linear-gradient(135deg, #2c3542, #1c222b);
-      color: var(--text); font-size: 1.2rem;
-      border: 1px solid var(--line); font-family: inherit;
-    }
-    .play:active { color: var(--accent); transform: scale(0.97); }
-
-    .pair-card {
-      margin-top: 1rem;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px 16px 16px;
-    }
-    .pair-card h2 {
-      font-size: 0.72rem; letter-spacing: 1.2px; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 10px;
-    }
-    .pair-card p { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
-    .device-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 200px; overflow-y: auto; }
+    .pair-help { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+    .device-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 180px; overflow-y: auto; }
     .device {
       text-align: left; border: 1px solid var(--line); border-radius: 12px;
-      background: var(--panel2); color: var(--text); padding: 12px 14px;
+      background: var(--panel2); color: var(--text); padding: 11px 12px;
       cursor: pointer; font-family: inherit;
     }
-    .device:hover, .device.selected { border-color: rgba(90,200,250,0.45); }
-    .device .n { font-weight: 800; font-size: 0.92rem; }
-    .device .m { font-size: 0.72rem; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; }
+    .device.selected { border-color: rgba(90,200,250,0.45); }
+    .device .n { font-weight: 800; font-size: 0.9rem; }
+    .device .m { font-size: 0.7rem; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; }
     .pin-row { display: flex; gap: 8px; }
     .pin-row input {
       flex: 1; border-radius: 12px; border: 1px solid var(--line);
-      background: #0e1116; color: var(--text); font-size: 1.2rem;
+      background: #0e1116; color: var(--text); font-size: 1.15rem;
       font-family: 'IBM Plex Mono', monospace; font-weight: 600;
-      letter-spacing: 4px; text-align: center; padding: 12px;
-      outline: none;
+      letter-spacing: 4px; text-align: center; padding: 11px;
+      outline: none; user-select: text; -webkit-user-select: text;
     }
     .pin-row input:focus { border-color: var(--accent); }
+
     .toast {
       position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
       background: #1c222b; color: var(--text); border: 1px solid var(--line);
@@ -214,26 +293,25 @@
       max-width: 90vw;
     }
     .toast.show { opacity: 1; }
-    .hint { text-align: center; margin-top: 0.9rem; font-size: 0.7rem; color: var(--muted); opacity: 0.7; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="status">
-      <div class="status-row">
-        <div class="pill"><span class="dot" id="dot"></span><span id="conn-label">Checking…</span></div>
-        <div class="pill" id="addr-label">—</div>
-      </div>
-      <div class="device-name" id="device-name">Apple TV Remote</div>
-      <div class="now-playing" id="now-playing"> </div>
-      <div class="status-actions">
-        <button class="btn-sm" onclick="scanDevices()">Scan</button>
-        <button class="btn-sm primary" onclick="connectDevice()">Connect</button>
-      </div>
-    </div>
 
     <div class="remote">
-      <div class="brand">Office · Apple TV</div>
+      <div class="remote-top">
+        <div style="min-width:0">
+          <div class="title">Apple TV Remote</div>
+          <div class="now-playing" id="now-playing"></div>
+        </div>
+        <div class="power-btn-wrap">
+          <span class="dot" id="dot" title="Connection"></span>
+          <button class="power-btn" id="btn-power" type="button" title="Tap to wake · Hold to sleep" aria-label="Power">
+            <svg class="hold-ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="21"/></svg>
+            ⏻
+          </button>
+        </div>
+      </div>
 
       <div class="dpad">
         <button class="dir up" data-action="up" aria-label="Up">▲</button>
@@ -254,23 +332,66 @@
         <button class="play" data-action="play_pause" aria-label="Play Pause">⏯</button>
         <button class="vol" data-action="volume_up" aria-label="Volume up">+</button>
       </div>
-    </div>
 
-    <div class="pair-card" id="pair-card">
-      <h2>Pair / Devices</h2>
-      <p id="pair-help">Scan the LAN, pick your office Apple TV, then enter the PIN shown on the TV.</p>
-      <div class="device-list" id="device-list"></div>
-      <div class="status-actions" style="margin-top:0;margin-bottom:10px">
-        <button class="btn-sm" onclick="scanDevices()">Refresh scan</button>
-        <button class="btn-sm primary" id="pair-start-btn" onclick="startPair()" disabled>Start pairing</button>
-      </div>
-      <div class="pin-row" id="pin-row" style="display:none">
-        <input id="pin-input" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="one-time-code" />
-        <button class="btn-sm primary" style="flex:0 0 auto;padding-inline:18px" onclick="finishPair()">Pair</button>
+      <!-- hidden kb kept for JS compat with auto-focus detection -->
+      <div class="kb" id="kb">
+        <div class="kb-row">
+          <input id="kb-input" type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Type…" />
+          <button class="btn-sm primary" type="button" onclick="sendKeyboard()">Send</button>
+        </div>
       </div>
     </div>
 
-    <div class="hint">http://10.0.0.188:8083 · same Wi‑Fi as the TV</div>
+    <!-- Keyboard drawer -->
+    <section class="drawer" aria-label="Keyboard">
+      <button class="drawer-toggle" id="kb-toggle" type="button" onclick="toggleKbDrawer()">
+        <span class="chevron">▸</span> Keyboard
+      </button>
+      <div class="drawer-body" id="kb-drawer-body">
+        <div class="kb-row">
+          <input id="kb-drawer-input" type="text" enterkeyhint="send" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Type to search…" />
+          <button class="btn-sm primary" type="button" onclick="sendKeyboardDrawer()">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- More drawer -->
+    <section class="drawer" aria-label="More">
+      <button class="drawer-toggle" id="more-toggle" type="button" onclick="toggleMore()">
+        <span class="chevron">▸</span> More
+      </button>
+      <div class="drawer-body" id="more-body">
+        <div class="row" style="margin-bottom:8px">
+          <button class="key" id="btn-sleep" type="button">Sleep</button>
+          <button class="key" id="btn-wake" type="button">Wake</button>
+          <button class="key" id="btn-type" type="button">Type</button>
+        </div>
+        <button class="yt" id="btn-youtube" type="button">▶ YouTube</button>
+      </div>
+    </section>
+
+    <section class="conn-card" aria-label="Connection">
+      <button class="conn-toggle" id="conn-toggle" onclick="toggleConn()">
+        <span class="chevron">▸</span> Connection
+        <span class="conn-toggle-sub" id="conn-toggle-sub"></span>
+      </button>
+      <div id="conn-body">
+        <div class="conn-meta" id="addr-label">—</div>
+        <div class="status-actions">
+          <button class="btn-sm" onclick="scanDevices()">Scan</button>
+          <button class="btn-sm primary" onclick="connectDevice()">Connect</button>
+        </div>
+        <p class="pair-help" id="pair-help">Scan the LAN, pick your office Apple TV, then enter the PIN shown on the TV.</p>
+        <div class="device-list" id="device-list"></div>
+        <div class="status-actions">
+          <button class="btn-sm primary" id="pair-start-btn" onclick="startPair()" disabled>Start pairing</button>
+        </div>
+        <div class="pin-row" id="pin-row" style="display:none">
+          <input id="pin-input" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="one-time-code" />
+          <button class="btn-sm primary" style="flex:0 0 auto;padding-inline:18px" onclick="finishPair()">Pair</button>
+        </div>
+      </div>
+    </section>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -278,6 +399,9 @@
 <script>
   let selectedId = null;
   let busy = false;
+  let autoConnecting = false;
+  let lastPaired = false;
+  let kbForced = false;
 
   function toast(msg) {
     const el = document.getElementById('toast');
@@ -285,6 +409,105 @@
     el.classList.add('show');
     clearTimeout(toast._t);
     toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function toggleMore() {
+    const body = document.getElementById('more-body');
+    const toggle = document.getElementById('more-toggle');
+    const open = body.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+  }
+
+  function toggleKbDrawer() {
+    const body = document.getElementById('kb-drawer-body');
+    const toggle = document.getElementById('kb-toggle');
+    const open = body.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    if (open) {
+      setTimeout(() => document.getElementById('kb-drawer-input').focus(), 80);
+    }
+  }
+
+  async function sendKeyboardDrawer() {
+    const input = document.getElementById('kb-drawer-input');
+    try {
+      await api('/api/keyboard', {
+        method: 'POST',
+        body: JSON.stringify({ text: input.value, mode: 'set' }),
+      });
+      toast('Sent');
+    } catch (e) {
+      toast(e.message);
+      if (lastPaired) autoReconnect();
+    }
+  }
+
+  let powerState = null; // 'on' | 'off' | null
+
+  function setPowerBtn(state) {
+    powerState = state;
+    const btn = document.getElementById('btn-power');
+    btn.classList.remove('on', 'off');
+    if (state === 'on') btn.classList.add('on');
+    else if (state === 'off') btn.classList.add('off');
+  }
+
+  // Hold-to-sleep / tap-to-wake logic for power button
+  let holdTimer = null;
+  let holdFired = false;
+
+  function powerHoldStart() {
+    holdFired = false;
+    const btn = document.getElementById('btn-power');
+    if (powerState === 'on') {
+      // Start the hold ring animation
+      btn.classList.add('holding');
+      holdTimer = setTimeout(async () => {
+        holdFired = true;
+        btn.classList.remove('holding');
+        if (!busy) {
+          await power('sleep');
+          setPowerBtn('off');
+        }
+      }, 600);
+    }
+  }
+
+  function powerHoldEnd() {
+    const btn = document.getElementById('btn-power');
+    clearTimeout(holdTimer);
+    btn.classList.remove('holding');
+    if (!holdFired && powerState !== 'on') {
+      // Quick tap → wake
+      (async () => {
+        if (!busy) {
+          await power('wake');
+          setPowerBtn('on');
+        }
+      })();
+    }
+  }
+
+  (function initPowerBtn() {
+    const btn = document.getElementById('btn-power');
+    btn.addEventListener('mousedown', (e) => { e.preventDefault(); powerHoldStart(); });
+    btn.addEventListener('mouseup', powerHoldEnd);
+    btn.addEventListener('mouseleave', powerHoldEnd);
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); powerHoldStart(); }, { passive: false });
+    btn.addEventListener('touchend', powerHoldEnd);
+    btn.addEventListener('touchcancel', powerHoldEnd);
+  })();
+
+  function toggleConn() {
+    const body = document.getElementById('conn-body');
+    const toggle = document.getElementById('conn-toggle');
+    const open = body.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    if (open && !document.getElementById('device-list').children.length) scanDevices();
+  }
+
+  function setKeyboardOpen(open) {
+    document.getElementById('kb').classList.toggle('open', open);
   }
 
   async function api(path, opts = {}) {
@@ -303,34 +526,76 @@
 
   function setConn(connected, paired) {
     const dot = document.getElementById('dot');
-    const label = document.getElementById('conn-label');
+    const sub = document.getElementById('conn-toggle-sub');
+    lastPaired = !!paired;
     dot.className = 'dot' + (connected ? ' on' : paired ? ' warn' : '');
-    label.textContent = connected ? 'Connected' : paired ? 'Paired · offline' : 'Not paired';
+    dot.title = connected ? 'Connected' : paired ? 'Paired · offline' : 'Not paired';
+    sub.textContent = connected ? '· connected' : paired ? '· offline' : '· setup';
+    // Reflect connection in power button
+    if (connected && powerState === null) setPowerBtn('on');
+    else if (!connected && !paired && powerState === null) setPowerBtn('off');
   }
 
-  async function refreshStatus() {
+  function setKeyboardFocus(kb) {
+    const focused = !!(kb && /Focused/i.test(String(kb.focus || '')));
+    if (focused) {
+      setKeyboardOpen(true);
+      if (kb.text != null && document.activeElement !== document.getElementById('kb-input')) {
+        document.getElementById('kb-input').value = kb.text;
+      }
+    } else if (!kbForced) {
+      setKeyboardOpen(false);
+    }
+  }
+
+  async function autoReconnect() {
+    if (autoConnecting || !lastPaired) return;
+    autoConnecting = true;
+    try {
+      await api('/api/connect', { method: 'POST', body: '{}' });
+      await refreshStatus({ skipAuto: true });
+    } catch (_) {
+    } finally {
+      autoConnecting = false;
+    }
+  }
+
+  async function refreshStatus(opts = {}) {
     try {
       const d = await api('/api/status');
       setConn(d.connected, d.paired);
-      document.getElementById('device-name').textContent = d.device_name || 'Apple TV Remote';
-      document.getElementById('addr-label').textContent = d.address || '—';
+      document.getElementById('addr-label').textContent =
+        [d.device_name, d.address].filter(Boolean).join(' · ') || '—';
       const p = d.playing;
-      if (p && (p.title || p.app)) {
-        const bits = [p.app, p.title, p.artist].filter(Boolean);
-        document.getElementById('now-playing').textContent = bits.join(' · ');
+      const np = document.getElementById('now-playing');
+      const appName = (p && p.app) || d.current_app || '';
+      const hasNp = !!(p && (p.title || p.app)) || !!d.current_app;
+      if (hasNp) {
+        np.textContent = [appName, p && p.title, p && p.artist].filter(Boolean).join(' · ');
       } else {
-        document.getElementById('now-playing').textContent = d.connected ? 'Idle' : ' ';
+        np.textContent = '';
       }
+      setKeyboardFocus(d.keyboard);
       if (d.identifier) selectedId = d.identifier;
+      if (!d.paired && !d.connected) {
+        document.getElementById('conn-body').classList.add('open');
+        document.getElementById('conn-toggle').classList.add('open');
+      }
+      // Update power button from playing/power state if available
+      const ps = d.power_state || '';
+      if (ps.includes('On') || d.connected) setPowerBtn('on');
+      else if (ps.includes('Standby') || ps.includes('Off')) setPowerBtn('off');
+      if (!opts.skipAuto && d.paired && !d.connected) autoReconnect();
     } catch (e) {
-      setConn(false, false);
-      document.getElementById('now-playing').textContent = 'Status unavailable';
+      setConn(false, lastPaired);
     }
   }
 
   async function scanDevices() {
     const list = document.getElementById('device-list');
     list.innerHTML = '<div class="m" style="color:var(--muted);padding:8px">Scanning…</div>';
+    document.getElementById('conn-body').classList.add('open');
+    document.getElementById('conn-toggle').classList.add('open');
     try {
       const d = await api('/api/scan');
       if (!d.devices.length) {
@@ -382,7 +647,7 @@
       toast(d.message || 'Paired');
       document.getElementById('pin-row').style.display = 'none';
       document.getElementById('pin-input').value = '';
-      await refreshStatus();
+      await refreshStatus({ skipAuto: true });
     } catch (e) {
       toast(e.message);
     }
@@ -392,10 +657,21 @@
     try {
       const d = await api('/api/connect', { method: 'POST', body: '{}' });
       toast(d.name ? `Connected · ${d.name}` : 'Connected');
-      await refreshStatus();
+      await refreshStatus({ skipAuto: true });
     } catch (e) {
       toast(e.message);
     }
+  }
+
+  // Wake the TV silently if it's off, then wait for it to respond
+  async function wakeIfNeeded() {
+    if (powerState !== 'off') return;
+    try {
+      await api('/api/power', { method: 'POST', body: JSON.stringify({ action: 'wake' }) });
+      setPowerBtn('on');
+      toast('Waking…');
+      await new Promise(r => setTimeout(r, 1200));
+    } catch (_) {}
   }
 
   async function send(action, btn) {
@@ -403,12 +679,59 @@
     busy = true;
     if (btn) btn.classList.add('pressed');
     try {
+      await wakeIfNeeded();
       await api('/api/remote/' + action, { method: 'POST', body: '{}' });
     } catch (e) {
       toast(e.message);
+      if (lastPaired) autoReconnect();
     } finally {
       if (btn) btn.classList.remove('pressed');
       busy = false;
+    }
+  }
+
+  async function launchYouTube() {
+    if (busy) return;
+    busy = true;
+    try {
+      await wakeIfNeeded();
+      await api('/api/apps/youtube', { method: 'POST', body: '{}' });
+      toast('Opening YouTube');
+      setTimeout(() => refreshStatus({ skipAuto: true }), 800);
+    } catch (e) {
+      toast(e.message);
+      if (lastPaired) autoReconnect();
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function power(action) {
+    if (busy) return;
+    busy = true;
+    try {
+      await api('/api/power', { method: 'POST', body: JSON.stringify({ action }) });
+      toast(action === 'wake' || action === 'on' ? 'Waking…' : 'Sleeping…');
+      setTimeout(() => refreshStatus({ skipAuto: true }), 1000);
+    } catch (e) {
+      toast(e.message);
+      if (lastPaired) autoReconnect();
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function sendKeyboard() {
+    const input = document.getElementById('kb-input');
+    try {
+      await api('/api/keyboard', {
+        method: 'POST',
+        body: JSON.stringify({ text: input.value, mode: 'set' }),
+      });
+      toast('Sent');
+    } catch (e) {
+      toast(e.message);
+      if (lastPaired) autoReconnect();
     }
   }
 
@@ -418,8 +741,30 @@
     btn.addEventListener('touchstart', (e) => { e.preventDefault(); send(btn.dataset.action, btn); }, { passive: false });
   });
 
+  document.getElementById('btn-youtube').addEventListener('click', (e) => { e.preventDefault(); launchYouTube(); });
+  document.getElementById('btn-sleep').addEventListener('click', (e) => { e.preventDefault(); power('sleep'); setPowerBtn('off'); });
+  document.getElementById('btn-wake').addEventListener('click', (e) => { e.preventDefault(); power('wake'); setPowerBtn('on'); });
+  document.getElementById('btn-type').addEventListener('click', (e) => {
+    e.preventDefault();
+    // Open keyboard drawer instead
+    const body = document.getElementById('kb-drawer-body');
+    const toggle = document.getElementById('kb-toggle');
+    if (!body.classList.contains('open')) {
+      body.classList.add('open');
+      toggle.classList.add('open');
+    }
+    setTimeout(() => document.getElementById('kb-drawer-input').focus(), 80);
+  });
+
+  document.getElementById('kb-drawer-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); sendKeyboardDrawer(); }
+  });
+
   document.getElementById('pin-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') finishPair();
+  });
+  document.getElementById('kb-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); sendKeyboard(); }
   });
 
   window.addEventListener('keydown', e => {
@@ -434,8 +779,6 @@
 
   refreshStatus();
   setInterval(refreshStatus, 5000);
-  // Auto-scan on first load so Office devices are visible
-  scanDevices();
 </script>
 </body>
 </html>

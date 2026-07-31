@@ -6,12 +6,12 @@ import asyncio
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import pyatv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pyatv import exceptions as atv_exceptions
 from pyatv.const import Protocol
 from pyatv.interface import AppleTV, BaseConfig, Playing
@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parent
 SETTINGS_FILE = ROOT / "settings.json"
 STORAGE_FILE = ROOT / "pyatv.conf"
 SCAN_TIMEOUT = 8.0
+YOUTUBE_BUNDLE_ID = "com.google.ios.youtube"
 
 # In-process session
 _storage: FileStorage | None = None
@@ -84,14 +85,12 @@ async def find_config(identifier: str | None = None) -> BaseConfig | None:
             if conf.identifier == identifier:
                 return conf
         return None
-    # Prefer saved identifier
     settings = load_app_settings()
     wanted = settings.get("identifier")
     if wanted:
         for conf in atvs:
             if conf.identifier == wanted:
                 return conf
-    # Prefer Companion-capable devices named Office*
     companion = [
         c for c in atvs
         if any(s.protocol == Protocol.Companion for s in c.services)
@@ -102,9 +101,16 @@ async def find_config(identifier: str | None = None) -> BaseConfig | None:
     return companion[0] if companion else (atvs[0] if atvs else None)
 
 
-async def ensure_connected() -> AppleTV:
+async def ensure_connected(*, force: bool = False) -> AppleTV:
     global _atv, _config
     async with _lock:
+        if force and _atv is not None:
+            try:
+                _atv.close()
+            except Exception:
+                pass
+            _atv = None
+            _config = None
         if _atv is not None:
             return _atv
         storage = await get_storage()
@@ -116,14 +122,31 @@ async def ensure_connected() -> AppleTV:
             _config = conf
             return _atv
         except Exception as e:
-            await close_atv()
+            _atv = None
+            _config = None
             raise HTTPException(status_code=503, detail=f"Connect failed: {e}") from e
+
+
+async def with_atv(coro_factory, *, retries: int = 1):
+    """Run an ATV call; on failure drop session and optionally reconnect once."""
+    last_err: Exception | None = None
+    for attempt in range(retries + 1):
+        try:
+            atv = await ensure_connected(force=(attempt > 0))
+            return await coro_factory(atv)
+        except HTTPException:
+            raise
+        except Exception as e:
+            last_err = e
+            await close_atv()
+            if attempt >= retries:
+                break
+    raise HTTPException(status_code=503, detail=f"Remote failed: {last_err}") from last_err
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await get_storage()
-    # Best-effort auto-connect if already paired
     try:
         settings = load_app_settings()
         if settings.get("identifier") and STORAGE_FILE.exists():
@@ -145,7 +168,7 @@ app = FastAPI(lifespan=lifespan)
 @app.middleware("http")
 async def no_cache_html(request: Request, call_next):
     response = await call_next(request)
-    if request.url.path.endswith((".html", "/")) or request.url.path.startswith("/api/"):
+    if request.url.path.endswith((".html", "/", ".webmanifest")) or request.url.path.startswith("/api/"):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
 
@@ -157,6 +180,9 @@ async def status():
     connected = _atv is not None
     device_name = _config.name if _config else settings.get("name")
     address = str(_config.address) if _config and _config.address else settings.get("address")
+    power_state = None
+    keyboard: dict[str, Any] | None = None
+    current_app = None
 
     if _atv is not None:
         try:
@@ -169,8 +195,24 @@ async def status():
                 "app": playing.app,
                 "media_type": str(playing.media_type) if playing.media_type else None,
             }
+            if playing.app:
+                current_app = playing.app
         except Exception:
             playing_info = None
+        try:
+            power_state = str(_atv.power.power_state)
+        except Exception:
+            power_state = None
+        try:
+            focus = str(_atv.keyboard.text_focus_state)
+            text = None
+            try:
+                text = await _atv.keyboard.text_get()
+            except Exception:
+                text = None
+            keyboard = {"focus": focus, "text": text}
+        except Exception:
+            keyboard = None
 
     return {
         "connected": connected,
@@ -179,6 +221,9 @@ async def status():
         "identifier": settings.get("identifier") or (_config.identifier if _config else None),
         "paired": bool(settings.get("identifier")) and STORAGE_FILE.exists(),
         "playing": playing_info,
+        "current_app": current_app,
+        "power_state": power_state,
+        "keyboard": keyboard,
     }
 
 
@@ -187,7 +232,6 @@ async def scan_devices():
     loop = asyncio.get_running_loop()
     atvs = await pyatv.scan(loop, timeout=SCAN_TIMEOUT)
     devices = [conf_to_dict(c) for c in atvs]
-    # Companion first, then name
     devices.sort(key=lambda d: (not d["has_companion"], (d["name"] or "").lower()))
     return {"ok": True, "devices": devices, "count": len(devices)}
 
@@ -287,7 +331,6 @@ async def pair_finish(payload: PairFinishPayload):
         if not paired_ok:
             raise HTTPException(status_code=400, detail="Pairing did not complete")
 
-        # Connect immediately
         conf = await find_config(settings.get("identifier"))
         if conf is None:
             return {"ok": True, "connected": False, "message": "Paired — connect when TV is reachable"}
@@ -341,28 +384,90 @@ async def remote_action(action: str):
     if not method_name:
         raise HTTPException(status_code=400, detail=f"Unknown action: {action}")
 
-    try:
-        atv = await ensure_connected()
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
+    async def run(atv: AppleTV):
+        remote = atv.remote_control
+        method = getattr(remote, method_name, None)
+        if method is None:
+            raise HTTPException(status_code=400, detail=f"Action not supported: {action}")
+        try:
+            await method()
+        except atv_exceptions.BlockedStateError as e:
+            raise HTTPException(status_code=409, detail=f"Blocked: {e}") from e
+        return {"ok": True, "action": action}
 
-    remote = atv.remote_control
-    method = getattr(remote, method_name, None)
-    if method is None:
-        raise HTTPException(status_code=400, detail=f"Action not supported: {action}")
+    return await with_atv(run)
 
-    try:
-        await method()
-    except atv_exceptions.BlockedStateError as e:
-        raise HTTPException(status_code=409, detail=f"Blocked: {e}") from e
-    except Exception as e:
-        # Connection may have died — drop and surface error
-        await close_atv()
-        raise HTTPException(status_code=503, detail=f"Remote failed: {e}") from e
 
-    return {"ok": True, "action": action}
+@app.post("/api/apps/youtube")
+async def launch_youtube():
+    async def run(atv: AppleTV):
+        await atv.apps.launch_app(YOUTUBE_BUNDLE_ID)
+        return {"ok": True, "app": "YouTube", "bundle_id": YOUTUBE_BUNDLE_ID}
+
+    return await with_atv(run)
+
+
+class PowerPayload(BaseModel):
+    action: Literal["on", "off", "wake", "sleep"]
+
+
+@app.post("/api/power")
+async def power_control(payload: PowerPayload):
+    turn_on = payload.action in ("on", "wake")
+
+    async def run(atv: AppleTV):
+        if turn_on:
+            await atv.power.turn_on()
+        else:
+            await atv.power.turn_off()
+        state = str(atv.power.power_state)
+        return {
+            "ok": True,
+            "action": "wake" if turn_on else "sleep",
+            "power_state": state,
+        }
+
+    return await with_atv(run)
+
+
+class KeyboardPayload(BaseModel):
+    text: str = Field(default="", max_length=500)
+    mode: Literal["set", "append"] = "set"
+
+
+@app.post("/api/keyboard")
+async def keyboard_input(payload: KeyboardPayload):
+    text = payload.text
+    if payload.mode == "append" and text == "":
+        raise HTTPException(status_code=400, detail="Nothing to append")
+
+    async def run(atv: AppleTV):
+        if payload.mode == "append":
+            await atv.keyboard.text_append(text)
+        else:
+            await atv.keyboard.text_set(text)
+        current = None
+        try:
+            current = await atv.keyboard.text_get()
+        except Exception:
+            pass
+        return {
+            "ok": True,
+            "mode": payload.mode,
+            "text": current if current is not None else text,
+            "focus": str(atv.keyboard.text_focus_state),
+        }
+
+    return await with_atv(run)
+
+
+@app.post("/api/keyboard/clear")
+async def keyboard_clear():
+    async def run(atv: AppleTV):
+        await atv.keyboard.text_clear()
+        return {"ok": True, "text": "", "focus": str(atv.keyboard.text_focus_state)}
+
+    return await with_atv(run)
 
 
 app.mount("/", StaticFiles(directory=str(ROOT / "static"), html=True), name="static")

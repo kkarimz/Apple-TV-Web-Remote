@@ -1,16 +1,20 @@
 # Apple TV Web Remote
 
-LAN web remote for office Apple TV, hosted on the Dell at **http://10.0.0.188:8083**.
+LAN web remote for office Apple TV, hosted on the Dell at **http://10.0.0.188:8888**.
 
-Uses [pyatv](https://pyatv.dev/) Companion protocol for D-pad, select, menu, home, play/pause, and volume.
+Uses [pyatv](https://pyatv.dev/) Companion protocol for D-pad, apps, power, and text input.
 
 ## Features
 
 - Scan & pick an Apple TV on the LAN
 - One-time PIN pairing (code shown on the TV)
 - Remote: directions, OK, Menu, Home, TV/top menu, volume, play/pause
-- Keyboard: arrow keys, Enter, Esc, Space
-- Auto-reconnect after restart when already paired
+- YouTube one-tap launch
+- Text input for on-TV search keyboards
+- Sleep / Wake
+- Auto-reconnect on open when already paired
+- Installable PWA (Add to Home Screen)
+- Desktop keyboard: arrow keys, Enter, Esc, Space
 
 ## Layout
 
@@ -32,7 +36,7 @@ XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000
 
 ## Pairing
 
-1. Open http://10.0.0.188:8083  
+1. Open http://10.0.0.188:8888  
 2. Scan → select **Office** (or the correct Apple TV)  
 3. Start pairing → enter PIN from the TV  
 4. Connect if needed  
