@@ -393,24 +393,34 @@ async def remote_action(action: str):
         if action == "mute":
             global _last_volume, _is_muted
             try:
-                if hasattr(atv, "audio"):
+                audio = getattr(atv, "audio", None)
+                if audio is not None:
                     try:
-                        vol = atv.audio.volume
+                        vol = audio.volume
                     except Exception:
                         vol = None
-                    
-                    if vol is not None and vol > 0.0:
-                        _last_volume = vol
-                        await atv.audio.set_volume(0.0)
-                        _is_muted = True
-                    elif vol == 0.0 or _is_muted:
-                        await atv.audio.set_volume(_last_volume)
+
+                    if _is_muted:
+                        try:
+                            await audio.set_volume(_last_volume)
+                        except Exception:
+                            for _ in range(10):
+                                await remote.volume_up()
+                                await asyncio.sleep(0.05)
                         _is_muted = False
                     else:
-                        await atv.audio.set_volume(0.0)
+                        if vol is not None and vol > 0:
+                            _last_volume = float(vol)
+                        try:
+                            await audio.set_volume(0.0)
+                        except Exception:
+                            for _ in range(15):
+                                await remote.volume_down()
+                                await asyncio.sleep(0.05)
+                        _is_muted = True
                 else:
                     if _is_muted:
-                        for _ in range(15):
+                        for _ in range(10):
                             await remote.volume_up()
                             await asyncio.sleep(0.05)
                         _is_muted = False
@@ -420,7 +430,8 @@ async def remote_action(action: str):
                             await asyncio.sleep(0.05)
                         _is_muted = True
             except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Mute failed: {e}")
+                # Return OK to prevent frontend from disconnecting on error
+                return {"ok": False, "action": "mute", "error": str(e)}
             return {"ok": True, "action": "mute"}
             
         if action == "select":
