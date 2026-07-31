@@ -3,7 +3,7 @@
 A fast, responsive, mobile-friendly web remote for Apple TV, hosted on your LAN. 
 Designed to mimic the physical silver Siri Remote, this web app lets you control your Apple TV from any browser on your network.
 
-![Apple TV Web Remote Screenshot](./screenshot.png)
+![Apple TV Web Remote Screenshot](./screenshot-v2.png)
 
 Under the hood, it uses the [pyatv](https://pyatv.dev/) library's Companion protocol to communicate with your Apple TV over the network.
 
