@@ -17,16 +17,58 @@
   <style>
     :root {
       --bg: #0b0d10;
-      --panel: #14181e;
+      --panel: #13171d;
       --panel2: #1c222b;
-      --line: rgba(255,255,255,0.08);
-      --text: #eef2f6;
+      --text: #ffffff;
       --muted: #8b97a8;
+      --line: #2d3542;
+      --key: #1e242d;
+      --key-hi: #2a313c;
       --accent: #5ac8fa;
-      --accent2: #0a84ff;
+      --accent2: #007aff;
       --ok: #32d74b;
-      --key: #252b34;
-      --key-hi: #323a46;
+
+      --remote-bg: linear-gradient(180deg, #1a1f27, #12151a);
+      --remote-border: var(--line);
+      --remote-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+      --dpad-bg: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
+      --dpad-shadow: inset 0 2px 8px rgba(0,0,0,0.55), 0 8px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
+      --select-bg: linear-gradient(160deg, #3a4452, #232933);
+      --select-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+      --select-active: linear-gradient(160deg, var(--accent2), #0055aa);
+      --power-bg: #1e242d;
+      --power-border: rgba(255,255,255,0.1);
+      --power-text: #8b97a8;
+      --power-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      --dir-dot: #8b97a8;
+      --siri-btn-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    :root.light {
+      --bg: #e2e4e8;
+      --panel: #f2f2f7;
+      --panel2: #ffffff;
+      --text: #000000;
+      --muted: #8e8e93;
+      --line: #c7c7cc;
+      --key: #1c1c1e;
+      --key-hi: #121214;
+      --accent: #007aff;
+
+      --remote-bg: linear-gradient(180deg, #e4e5e7, #d2d4d8);
+      --remote-border: #bcc0c5;
+      --remote-shadow: 0 25px 50px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.8);
+      --dpad-bg: #1c1c1e;
+      --dpad-shadow: inset 0 1px 4px rgba(255,255,255,0.1), 0 8px 16px rgba(0,0,0,0.15);
+      --select-bg: #141414;
+      --select-shadow: inset 0 4px 8px rgba(0,0,0,0.6), 0 0 0 1px #000, 0 1px 1px rgba(255,255,255,0.1);
+      --select-active: #0a0a0c;
+      --power-bg: linear-gradient(180deg, #f0f1f3, #e1e3e6);
+      --power-border: #b5b8bc;
+      --power-text: #333;
+      --power-shadow: 0 2px 6px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.9);
+      --dir-dot: #fff;
+      --siri-btn-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.8);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { background: var(--bg); touch-action: manipulation; }
@@ -46,12 +88,12 @@
     .wrap { width: 100%; max-width: 360px; }
 
     .remote {
-      background: linear-gradient(180deg, #1a1f27, #12151a);
-      border: 1px solid var(--line);
+      background: var(--remote-bg);
+      border: 1px solid var(--remote-border);
       border-radius: 40px;
       padding: 1.5rem 1.25rem 2rem;
       margin-bottom: 0.75rem;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow: var(--remote-shadow);
       position: relative;
     }
     .remote-top {
@@ -80,13 +122,13 @@
     /* Power button — top-right corner */
     .power-btn {
       width: 38px; height: 38px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.1);
-      background: #1e242d;
-      color: #8b97a8;
+      border: 1px solid var(--power-border);
+      background: var(--power-bg);
+      color: var(--power-text);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      box-shadow: var(--power-shadow);
       position: absolute; top: 1rem; right: 1rem;
     }
     .power-btn:active { transform: scale(0.92); }
@@ -124,11 +166,8 @@
       width: 260px; height: 260px; margin: 3rem auto 1.5rem;
       position: relative;
       border-radius: 50%;
-      background: radial-gradient(circle at 50% 45%, #2a313c, #171b21 70%);
-      box-shadow:
-        inset 0 2px 8px rgba(0,0,0,0.55),
-        0 8px 20px rgba(0,0,0,0.35),
-        0 0 0 1px rgba(255,255,255,0.05);
+      background: var(--dpad-bg);
+      box-shadow: var(--dpad-shadow);
     }
     .dir {
       position: absolute; width: 70px; height: 70px;
@@ -138,7 +177,7 @@
     }
     .dir::after {
       content: ''; display: block; width: 4px; height: 4px;
-      background: #8b97a8; border-radius: 50%; opacity: 0.6;
+      background: var(--dir-dot); border-radius: 50%; opacity: 0.6;
     }
     .dir:active, .dir.pressed {
       background: rgba(90,200,250,0.12);
@@ -151,12 +190,12 @@
       position: absolute; top: 50%; left: 50%;
       width: 120px; height: 120px; margin: -60px 0 0 -60px;
       border: none; border-radius: 50%; cursor: pointer;
-      background: linear-gradient(160deg, #3a4452, #232933);
+      background: var(--select-bg);
       color: transparent;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+      box-shadow: var(--select-shadow);
     }
     .select:active, .select.pressed {
-      background: linear-gradient(160deg, var(--accent2), #0055aa);
+      background: var(--select-active);
     }
 
     /* Siri Remote Bottom Buttons */
@@ -170,10 +209,10 @@
     }
     .siri-btn {
       width: 76px; height: 76px; border-radius: 50%;
-      background: var(--key); color: var(--text); border: 1px solid var(--line);
+      background: var(--key); color: #fff; border: 1px solid var(--line);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: var(--siri-btn-shadow);
       transition: transform 0.1s;
     }
     .siri-btn:active, .siri-btn.pressed { transform: scale(0.95); background: var(--key-hi); color: var(--accent); }
@@ -185,11 +224,11 @@
       border-radius: 38px;
       background: var(--key); border: 1px solid var(--line);
       display: flex; flex-direction: column;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: var(--siri-btn-shadow);
       overflow: hidden;
     }
     .siri-vol-pill .vol {
-      width: 100%; height: 50%; border: none; background: transparent; color: var(--text);
+      width: 100%; height: 50%; border: none; background: transparent; color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; font-weight: 300; cursor: pointer; transition: background 0.1s;
     }
@@ -199,7 +238,7 @@
     .apps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .app-btn {
       height: 48px; border-radius: 12px; cursor: pointer;
-      background: var(--key); color: var(--text); border: 1px solid var(--line);
+      background: var(--key); color: #fff; border: 1px solid var(--line);
       font-family: inherit; font-weight: 700; font-size: 0.75rem;
       transition: background 0.15s;
     }
@@ -315,6 +354,9 @@
   <div class="wrap">
 
     <div class="remote">
+      <!-- Theme toggle in top left -->
+      <button onclick="document.documentElement.classList.toggle('light')" style="position:absolute;top:1rem;left:1rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;" aria-label="Toggle Theme">◐</button>
+      
       <div class="remote-top">
         <div style="min-width:0">
           <div class="title">Apple TV Remote</div>
