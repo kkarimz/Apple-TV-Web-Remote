@@ -29,6 +29,8 @@ _atv: AppleTV | None = None
 _config: BaseConfig | None = None
 _pairing: Any = None
 _lock = asyncio.Lock()
+_last_volume = 20.0
+_is_muted = False
 
 
 def load_app_settings() -> dict:
@@ -389,14 +391,34 @@ async def remote_action(action: str):
         remote = atv.remote_control
         
         if action == "mute":
+            global _last_volume, _is_muted
             try:
-                if hasattr(atv, "audio") and hasattr(atv.audio, "set_volume"):
-                    await atv.audio.set_volume(0.0)
+                if hasattr(atv, "audio"):
+                    try:
+                        vol = atv.audio.volume
+                    except Exception:
+                        vol = None
+                    
+                    if vol is not None and vol > 0.0:
+                        _last_volume = vol
+                        await atv.audio.set_volume(0.0)
+                        _is_muted = True
+                    elif vol == 0.0 or _is_muted:
+                        await atv.audio.set_volume(_last_volume)
+                        _is_muted = False
+                    else:
+                        await atv.audio.set_volume(0.0)
                 else:
-                    # Fallback if audio interface is not exposed
-                    for _ in range(20):
-                        await remote.volume_down()
-                        await asyncio.sleep(0.05)
+                    if _is_muted:
+                        for _ in range(15):
+                            await remote.volume_up()
+                            await asyncio.sleep(0.05)
+                        _is_muted = False
+                    else:
+                        for _ in range(15):
+                            await remote.volume_down()
+                            await asyncio.sleep(0.05)
+                        _is_muted = True
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Mute failed: {e}")
             return {"ok": True, "action": "mute"}
