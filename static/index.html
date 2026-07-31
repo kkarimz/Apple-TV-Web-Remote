@@ -195,12 +195,15 @@
     }
     .siri-vol-pill .vol:active, .siri-vol-pill .vol.pressed { background: var(--key-hi); color: var(--accent); }
     
-    /* Hide old styles used by drawers */
-    .row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .key, .yt { height: 48px; border-radius: 12px; cursor: pointer; background: var(--key); color: var(--text); border: 1px solid var(--line); flex:1;}
-    .key:active, .yt:active { background: var(--key-hi); }
-    .yt { color: #ff6b63; border-color: rgba(255,107,99,0.28); }
-    .drawer .row { margin-bottom: 0; }
+    /* App Drawer Grid */
+    .apps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .app-btn {
+      height: 48px; border-radius: 12px; cursor: pointer;
+      background: var(--key); color: var(--text); border: 1px solid var(--line);
+      font-family: inherit; font-weight: 700; font-size: 0.75rem;
+      transition: background 0.15s;
+    }
+    .app-btn:active { background: var(--key-hi); color: var(--accent); }
 
     /* Inline kb (auto-opens when TV keyboard is focused) — hidden, kept for JS compat */
     .kb { display: none; }
@@ -374,18 +377,20 @@
       </div>
     </section>
 
-    <!-- More drawer -->
-    <section class="drawer" aria-label="More">
-      <button class="drawer-toggle" id="more-toggle" type="button" onclick="toggleMore()">
-        <span class="chevron">▸</span> More
+    <!-- Apps drawer -->
+    <section class="drawer" aria-label="Apps">
+      <button class="drawer-toggle" id="apps-toggle" type="button" onclick="toggleApps()">
+        <span class="chevron">▸</span> Apps
       </button>
-      <div class="drawer-body" id="more-body">
-        <div class="row" style="margin-bottom:8px">
-          <button class="key" id="btn-sleep" type="button">Sleep</button>
-          <button class="key" id="btn-wake" type="button">Wake</button>
-          <button class="key" id="btn-type" type="button">Type</button>
+      <div class="drawer-body" id="apps-body">
+        <div class="apps-grid">
+          <button class="app-btn" onclick="launchApp('com.google.ios.youtube')">YouTube</button>
+          <button class="app-btn" onclick="launchApp('com.netflix.Netflix')">Netflix</button>
+          <button class="app-btn" onclick="launchApp('com.disney.disneyplus')">Disney+</button>
+          <button class="app-btn" onclick="launchApp('com.amazon.aiv.AIVApp')">Prime</button>
+          <button class="app-btn" onclick="launchApp('com.hulu.plus')">Hulu</button>
+          <button class="app-btn" onclick="launchApp('com.apple.tv')">Apple TV</button>
         </div>
-        <button class="yt" id="btn-youtube" type="button">▶ YouTube</button>
       </div>
     </section>
 
@@ -430,9 +435,9 @@
     toast._t = setTimeout(() => el.classList.remove('show'), 2200);
   }
 
-  function toggleMore() {
-    const body = document.getElementById('more-body');
-    const toggle = document.getElementById('more-toggle');
+  function toggleApps() {
+    const body = document.getElementById('apps-body');
+    const toggle = document.getElementById('apps-toggle');
     const open = body.classList.toggle('open');
     toggle.classList.toggle('open', open);
   }
@@ -709,13 +714,13 @@
     }
   }
 
-  async function launchYouTube() {
+  async function launchApp(bundleId) {
     if (busy) return;
     busy = true;
     try {
       await wakeIfNeeded();
-      await api('/api/apps/youtube', { method: 'POST', body: '{}' });
-      toast('Opening YouTube');
+      await api('/api/launch/' + encodeURIComponent(bundleId), { method: 'POST', body: '{}' });
+      toast('Opening app...');
       setTimeout(() => refreshStatus({ skipAuto: true }), 800);
     } catch (e) {
       toast(e.message);
@@ -760,20 +765,7 @@
     btn.addEventListener('touchstart', (e) => { e.preventDefault(); send(btn.dataset.action, btn); }, { passive: false });
   });
 
-  document.getElementById('btn-youtube').addEventListener('click', (e) => { e.preventDefault(); launchYouTube(); });
-  document.getElementById('btn-sleep').addEventListener('click', (e) => { e.preventDefault(); power('sleep'); setPowerBtn('off'); });
-  document.getElementById('btn-wake').addEventListener('click', (e) => { e.preventDefault(); power('wake'); setPowerBtn('on'); });
-  document.getElementById('btn-type').addEventListener('click', (e) => {
-    e.preventDefault();
-    // Open keyboard drawer instead
-    const body = document.getElementById('kb-drawer-body');
-    const toggle = document.getElementById('kb-toggle');
-    if (!body.classList.contains('open')) {
-      body.classList.add('open');
-      toggle.classList.add('open');
-    }
-    setTimeout(() => document.getElementById('kb-drawer-input').focus(), 80);
-  });
+
 
   document.getElementById('kb-drawer-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); sendKeyboardDrawer(); }

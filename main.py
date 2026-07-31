@@ -413,11 +413,11 @@ async def remote_action(action: str):
     return await with_atv(run)
 
 
-@app.post("/api/apps/youtube")
-async def launch_youtube():
+@app.post("/api/launch/{bundle_id:path}")
+async def launch_app(bundle_id: str):
     async def run(atv: AppleTV):
-        await atv.apps.launch_app(YOUTUBE_BUNDLE_ID)
-        return {"ok": True, "app": "YouTube", "bundle_id": YOUTUBE_BUNDLE_ID}
+        await atv.apps.launch_app(bundle_id)
+        return {"ok": True, "bundle_id": bundle_id}
 
     return await with_atv(run)
 
